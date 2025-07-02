@@ -1,3 +1,4 @@
+from django.conf import settings
 from edx_django_utils.plugins import add_plugins
 from credentials.settings._debug_toolbar import *
 from credentials.settings.base import *
@@ -43,11 +44,22 @@ INSTALLED_APPS += ["credentials.apps.edx_credentials_extensions"]
 EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
 EMAIL_FILE_PATH = "/tmp/credentials-emails"
 
-DEFAULT_FILE_STORAGE = os.environ.get("DEFAULT_FILE_STORAGE", "django.core.files.storage.FileSystemStorage")
 MEDIA_URL = os.environ.get("MEDIA_URL", "/media/")
-
-STATICFILES_STORAGE = os.environ.get("STATICFILES_STORAGE", "django.contrib.staticfiles.storage.StaticFilesStorage")
 STATIC_URL = os.environ.get("STATIC_URL", "/static/")
+
+if hasattr(settings, "STORAGES"):
+    STORAGES = {
+        "default": {
+            "BACKEND": "django.core.files.storage.FileSystemStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        },
+    }
+else:
+    # Legacy fallback for older Django versions or production configs
+    DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
+    STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
 
 # OAuth2 variables specific to social-auth/SSO login use case.
 SOCIAL_AUTH_EDX_OAUTH2_KEY = os.environ.get("SOCIAL_AUTH_EDX_OAUTH2_KEY", "credentials-sso-key")

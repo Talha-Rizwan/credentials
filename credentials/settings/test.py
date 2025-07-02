@@ -1,4 +1,6 @@
 import os
+import django
+from django.conf import settings 
 from pathlib import Path as path
 
 from edx_django_utils.plugins import add_plugins
@@ -35,9 +37,20 @@ CACHES = {
 
 # Local Directories
 TEST_ROOT = path("test_root")
-DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
+
 MEDIA_ROOT = str(TEST_ROOT / "uploads")
 MEDIA_URL = "/static/uploads/"
+
+# Configure STORAGES for Django 4.2+ and above
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
+
 
 SOCIAL_AUTH_EDX_OAUTH2_URL_ROOT = "https://test-provider"
 BACKEND_SERVICE_EDX_OAUTH2_PROVIDER_URL = "https://test-provider/oauth2"
@@ -49,7 +62,6 @@ JWT_AUTH.update(
         "JWT_AUDIENCE": SOCIAL_AUTH_EDX_OAUTH2_KEY,
     }
 )
-STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
 
 # Verifiable Credentials
 ENABLE_VERIFIABLE_CREDENTIALS = True
