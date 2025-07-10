@@ -1,4 +1,5 @@
 import os
+from django.conf import settings
 from datetime import timezone
 from os.path import abspath, dirname, join
 
@@ -456,7 +457,6 @@ CSRF_COOKIE_SECURE = False
 FILE_STORAGE_BACKEND = {}
 EXTRA_APPS = []
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
-STATICFILES_STORAGE = "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"
 CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
@@ -474,10 +474,20 @@ EDX_DRF_EXTENSIONS = {
 }
 API_ROOT = None
 MEDIA_STORAGE_BACKEND = {
-    "DEFAULT_FILE_STORAGE": "django.core.files.storage.FileSystemStorage",
     "MEDIA_ROOT": MEDIA_ROOT,
     "MEDIA_URL": MEDIA_URL,
 }
+
+# Configure STORAGES for Django 4.2+ and above
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.ManifestStaticFilesStorage",
+    },
+}
+
 SOCIAL_AUTH_REDIRECT_IS_HTTPS = False
 
 # .. toggle_name: SEND_EMAIL_ON_PROGRAM_COMPLETION

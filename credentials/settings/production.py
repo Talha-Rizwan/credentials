@@ -16,13 +16,6 @@ ALLOWED_HOSTS = ["*"]
 # the values read from disk should UPDATE the pre-configured dicts.
 DICT_UPDATE_KEYS = ("JWT_AUTH",)
 
-# AMAZON S3 STORAGE CONFIGURATION
-# See: https://django-storages.readthedocs.org/en/latest/backends/amazon-S3.html#settings
-
-# This may be overridden by the yaml in CREDENTIALS_CFG, but it should
-# be here as a default.
-FILE_STORAGE_BACKEND = {}
-
 EMAIL_BACKEND = "django_ses.SESBackend"
 AWS_SES_REGION_NAME = environ.get("AWS_SES_REGION_NAME", "us-east-1")
 AWS_SES_REGION_ENDPOINT = environ.get("AWS_SES_REGION_ENDPOINT", "email.us-east-1.amazonaws.com")
@@ -44,8 +37,29 @@ with open(CONFIG_FILE, encoding="utf-8") as f:
 
     vars().update(config_from_yaml)
 
-    # Load the files storage backend settings for django storages
-    vars().update(FILE_STORAGE_BACKEND)
+    # Handle FILE_STORAGE_BACKEND for Django >=5.2
+    file_storage_backend = config_from_yaml.pop("FILE_STORAGE_BACKEND", None)
+    if file_storage_backend:
+        # Get backend dynamically from YAML
+        backend = file_storage_backend.pop("DEFAULT_FILE_STORAGE", None)
+
+        # Remove DEFAULT_FILE_STORAGE (clean Django <5.2 remnants)
+        if backend:
+            STORAGES = {
+                "default": {
+                    "BACKEND": backend,
+                    "OPTIONS": file_storage_backend,  # Remaining AWS_* options
+                }
+            }
+
+        # Handle media root and URL
+        media_root = file_storage_backend.pop("MEDIA_ROOT", None)
+        media_url = file_storage_backend.pop("MEDIA_URL", None)
+
+        if media_root:
+            MEDIA_ROOT = media_root
+        if media_url:
+            MEDIA_URL = media_url
 
 # make sure this happens after the configuration file overrides so format string can be overridden
 LOGGING = get_logger_config(format_string=LOGGING_FORMAT_STRING)
